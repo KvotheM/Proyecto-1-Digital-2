@@ -1,3 +1,12 @@
+/*
+Universidad del Valle de Guatemala
+Proyecto 1, Digital 2 
+Nicolás Moklebust, 22037
+El proyecto tiene como función principal recibir una señal analógica de un sensor de temperatura. La señal se traduce en temperatura y se la muestra
+en un display de 7 segmentos. Además, dependiendo de dónde se encuentra la temperatura se encienden leds y se mueve un potenciómetro para indicar si
+hay fiebre o la temperatura es normal. Finalmente, la temperatura leída se envía a Adafruit.
+Micro: ESP32 DEV Kit 1.0
+*/
 #include <Arduino.h>
 #include "config.h"
 #include <stdint.h>
@@ -107,15 +116,13 @@ void loop() {
 }
 void enviar(void){
   Temperatura->save(temp);
-  delay(100);
-  Serial.print("Hallelujah"); 
+  delay(100); 
 }
 void obtener_temp(void){
   val_sensor = analogRead(sensor);
   mapeo = map(val_sensor, 0, 4095, 320, 420);
   envio = 0;
   temperatura(mapeo);
-  Serial.print(temp);
   delay(100);
 }
 void temperatura(int mapeo){
