@@ -1,13 +1,14 @@
-//Código recibe la señal del botón y con una interrupción envía los datos a adafruit. 
 #include <Arduino.h>
+#include "config.h"
 #include <stdint.h>
 #include <driver/adc.h>
 #include "driver/ledc.h"
+#include "Adafruit_MQTT.h"
 
 #define boton 15
 #define sensor 34
-#define disp1 21
-#define pinA 22
+#define disp1 13
+#define pinA 12
 #define pinF 14
 #define disp2 27
 #define disp3 26
@@ -17,9 +18,10 @@
 #define pinP 4
 #define pinC 5
 #define pinG 18
-#define ledR 13
-#define ledN 12
-#define ledA 23
+
+#define ledR 23
+#define ledN 22
+#define ledA 21
 #define servo 19
 
 #define PWM_R 7
@@ -40,55 +42,78 @@ void temperatura(int mapeo);
 void display(int valorSensor);
 
 void initPWM_servo(void);
+void initPWM_led_N(void);
 void initPWM_led_R(void);
-void initPWM_led_R(void);
-void initPWM_led_R(void);
+void initPWM_led_A(void);
 void num_display(void);
 void PWM(float temp);
+void obtener_temp(void);
+void enviar(void);
 
 portMUX_TYPE mux = portMUX_INITIALIZER_UNLOCKED;
 volatile unsigned long debounce1 = 0;
 
 
+AdafruitIO_Feed *Temperatura = io.feed("Temperatura");
+
 void setup() {
-    Serial.begin(115200);
+  Serial.begin(115200);
+  while(! Serial);
+  Serial.print("Connecting to Adafruit IO");
+  io.connect();
+  while(io.status() < AIO_CONNECTED) {
+    Serial.print(".");
+    delay(500);
+  }
+  Serial.println();
+  Serial.println(io.statusText());
 
-    pinMode(boton, INPUT_PULLDOWN);
-    pinMode(sensor, INPUT);
-    pinMode(pinA, OUTPUT);
-    pinMode(pinB, OUTPUT);
-    pinMode(pinC, OUTPUT);
-    pinMode(pinD, OUTPUT);
-    pinMode(pinE, OUTPUT);
-    pinMode(pinF, OUTPUT);
-    pinMode(pinG, OUTPUT);
-    pinMode(pinP, OUTPUT);
-    pinMode(disp1, OUTPUT);
-    pinMode(disp2, OUTPUT);
-    pinMode(disp3, OUTPUT);
+  pinMode(boton, INPUT_PULLDOWN);
+  pinMode(sensor, INPUT);
+  pinMode(pinA, OUTPUT);
+  pinMode(pinB, OUTPUT);
+  pinMode(pinC, OUTPUT);
+  pinMode(pinD, OUTPUT);
+  pinMode(pinE, OUTPUT);
+  pinMode(pinF, OUTPUT);
+  pinMode(pinG, OUTPUT);
+  pinMode(pinP, OUTPUT);
+  pinMode(disp1, OUTPUT);
+  pinMode(disp2, OUTPUT);
+  pinMode(disp3, OUTPUT);
 
-    attachInterrupt(digitalPinToInterrupt(boton), ada_ISR, RISING);
+  attachInterrupt(digitalPinToInterrupt(boton), ada_ISR, RISING);
 
-    initPWM_servo();
-    initPWM_led_R();
-    initPWM_led_R();
-    initPWM_led_R();
+  initPWM_servo();
+  initPWM_led_R();
+  initPWM_led_A();
+  initPWM_led_N();
+
 }
 
 void loop() {
+  io.run();
   if(envio == 1){
-    //lógica de envio de adafruit
     delay(10);
-    val_sensor = analogRead(sensor);
-    mapeo = map(val_sensor, 0, 4095, 320, 420);
-    envio = 0;
-    temperatura(mapeo);
-    Serial.print(temp);
-    delay(100);
-    Serial.print("Hallelujah");
+    obtener_temp();
+    enviar();
   }
   num_display();
   PWM(temp);
+
+}
+void enviar(void){
+  Temperatura->save(temp);
+  delay(100);
+  Serial.print("Hallelujah"); 
+}
+void obtener_temp(void){
+  val_sensor = analogRead(sensor);
+  mapeo = map(val_sensor, 0, 4095, 320, 420);
+  envio = 0;
+  temperatura(mapeo);
+  Serial.print(temp);
+  delay(100);
 }
 void temperatura(int mapeo){
   temp = (float)mapeo/10;
@@ -105,6 +130,7 @@ void IRAM_ATTR ada_ISR(void){
     debounce1 = currentTime;
   }
 }
+
 void display(int valorSensor){
   switch (valorSensor)
   {
@@ -224,26 +250,23 @@ void num_display(void){
   delay(5);
 }
 void PWM(float temp){
-  if(temp <= 37){
+  if(temp <= 37 & temp != 0){
     ledcWrite(PWM_S, 26);
     ledcWrite(PWM_A, 128);
     ledcWrite(PWM_R, 0);
     ledcWrite(PWM_N, 0);
-    Serial.print("1");
   }
   else if(temp > 37 & temp <= 37.5){
     ledcWrite(PWM_S, 77);
     ledcWrite(PWM_N, 128);
     ledcWrite(PWM_R, 0);
     ledcWrite(PWM_A, 0);
-    Serial.print("2");
   }
   else if(temp > 37.5){
     ledcWrite(PWM_S, 128);
     ledcWrite(PWM_R, 128);
     ledcWrite(PWM_A, 0);
     ledcWrite(PWM_N, 0);
-    Serial.print("3");
   }
 }
 void initPWM_servo(void) {
