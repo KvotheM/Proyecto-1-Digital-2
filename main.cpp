@@ -7,14 +7,17 @@
 
 #define boton 15
 #define sensor 34
+//arriba
 #define disp1 13
 #define pinA 12
 #define pinF 14
 #define disp2 27
 #define disp3 26
 #define pinB 25
+//arriba-abajo
 #define pinE 33
 #define pinD 32
+//abajo
 #define pinP 4
 #define pinC 5
 #define pinG 18
@@ -251,19 +254,19 @@ void num_display(void){
 }
 void PWM(float temp){
   if(temp <= 37 & temp != 0){
-    ledcWrite(PWM_S, 26);
+    ledcWrite(PWM_S, 95);
     ledcWrite(PWM_A, 128);
     ledcWrite(PWM_R, 0);
     ledcWrite(PWM_N, 0);
   }
   else if(temp > 37 & temp <= 37.5){
-    ledcWrite(PWM_S, 77);
+    ledcWrite(PWM_S, 70);
     ledcWrite(PWM_N, 128);
     ledcWrite(PWM_R, 0);
     ledcWrite(PWM_A, 0);
   }
   else if(temp > 37.5){
-    ledcWrite(PWM_S, 128);
+    ledcWrite(PWM_S, 51);
     ledcWrite(PWM_R, 128);
     ledcWrite(PWM_A, 0);
     ledcWrite(PWM_N, 0);
@@ -272,7 +275,7 @@ void PWM(float temp){
 void initPWM_servo(void) {
   ledcSetup(PWM_S, freqPWM, resPWM);
   ledcAttachPin(servo, PWM_S);
-  ledcWrite(PWM_S, 0);
+  ledcWrite(PWM_S, 123);
 }
 void initPWM_led_R(void) {
   ledcSetup(PWM_R, freqPWM, resPWM);
