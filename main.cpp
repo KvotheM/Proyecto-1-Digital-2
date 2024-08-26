@@ -2,11 +2,12 @@
 #include <Arduino.h>
 #include <stdint.h>
 #include <driver/adc.h>
+#include "driver/ledc.h"
 
 #define boton 15
 #define sensor 34
-#define disp1 13
-#define pinA 12
+#define disp1 21
+#define pinA 22
 #define pinF 14
 #define disp2 27
 #define disp3 26
@@ -16,6 +17,18 @@
 #define pinP 4
 #define pinC 5
 #define pinG 18
+#define ledR 13
+#define ledN 12
+#define ledA 23
+#define servo 19
+
+#define PWM_R 7
+#define PWM_N 8
+#define PWM_A 9
+#define PWM_S 10
+
+#define freqPWM 50
+#define resPWM 10
 
 int envio = 0;
 int mapeo, val_sensor;
@@ -25,6 +38,13 @@ float temp = 0.0;
 void IRAM_ATTR ada_ISR(void);
 void temperatura(int mapeo);
 void display(int valorSensor);
+
+void initPWM_servo(void);
+void initPWM_led_R(void);
+void initPWM_led_R(void);
+void initPWM_led_R(void);
+void num_display(void);
+void PWM(float temp);
 
 portMUX_TYPE mux = portMUX_INITIALIZER_UNLOCKED;
 volatile unsigned long debounce1 = 0;
@@ -48,6 +68,11 @@ void setup() {
     pinMode(disp3, OUTPUT);
 
     attachInterrupt(digitalPinToInterrupt(boton), ada_ISR, RISING);
+
+    initPWM_servo();
+    initPWM_led_R();
+    initPWM_led_R();
+    initPWM_led_R();
 }
 
 void loop() {
@@ -58,31 +83,12 @@ void loop() {
     mapeo = map(val_sensor, 0, 4095, 320, 420);
     envio = 0;
     temperatura(mapeo);
-    Serial.print(mapeo);
+    Serial.print(temp);
     delay(100);
     Serial.print("Hallelujah");
   }
-  
-  digitalWrite(disp1, HIGH);
-  digitalWrite(disp2, LOW);
-  digitalWrite(disp3, LOW);
-  digitalWrite(pinP, LOW);
-  display(dig[0]);
-  delay(5);
-
-  digitalWrite(disp1, LOW);
-  digitalWrite(disp2, HIGH);
-  digitalWrite(disp3, LOW);
-  digitalWrite(pinP, HIGH);
-  display(dig[1]);
-  delay(5);
-
-  digitalWrite(disp1, LOW);
-  digitalWrite(disp2, LOW);
-  digitalWrite(disp3, HIGH);
-  digitalWrite(pinP, LOW);
-  display(dig[2]);
-  delay(5);  
+  num_display();
+  PWM(temp);
 }
 void temperatura(int mapeo){
   temp = (float)mapeo/10;
@@ -193,4 +199,70 @@ void display(int valorSensor){
     digitalWrite(pinG, HIGH);
     break;
   }
+}
+
+void num_display(void){
+  digitalWrite(disp1, HIGH);
+  digitalWrite(disp2, LOW);
+  digitalWrite(disp3, LOW);
+  digitalWrite(pinP, LOW);
+  display(dig[0]);
+  delay(5);
+
+  digitalWrite(disp1, LOW);
+  digitalWrite(disp2, HIGH);
+  digitalWrite(disp3, LOW);
+  digitalWrite(pinP, HIGH);
+  display(dig[1]);
+  delay(5);
+
+  digitalWrite(disp1, LOW);
+  digitalWrite(disp2, LOW);
+  digitalWrite(disp3, HIGH);
+  digitalWrite(pinP, LOW);
+  display(dig[2]);
+  delay(5);
+}
+void PWM(float temp){
+  if(temp <= 37){
+    ledcWrite(PWM_S, 26);
+    ledcWrite(PWM_A, 128);
+    ledcWrite(PWM_R, 0);
+    ledcWrite(PWM_N, 0);
+    Serial.print("1");
+  }
+  else if(temp > 37 & temp <= 37.5){
+    ledcWrite(PWM_S, 77);
+    ledcWrite(PWM_N, 128);
+    ledcWrite(PWM_R, 0);
+    ledcWrite(PWM_A, 0);
+    Serial.print("2");
+  }
+  else if(temp > 37.5){
+    ledcWrite(PWM_S, 128);
+    ledcWrite(PWM_R, 128);
+    ledcWrite(PWM_A, 0);
+    ledcWrite(PWM_N, 0);
+    Serial.print("3");
+  }
+}
+void initPWM_servo(void) {
+  ledcSetup(PWM_S, freqPWM, resPWM);
+  ledcAttachPin(servo, PWM_S);
+  ledcWrite(PWM_S, 0);
+}
+void initPWM_led_R(void) {
+  ledcSetup(PWM_R, freqPWM, resPWM);
+  ledcAttachPin(ledR, PWM_R);
+  ledcWrite(PWM_R, 0);
+}
+void initPWM_led_N(void) {
+  ledcSetup(PWM_N, freqPWM, resPWM);
+  ledcAttachPin(ledN, PWM_N);
+  ledcWrite(PWM_N, 0);
+}
+void initPWM_led_A(void) {
+  ledcSetup(PWM_A, freqPWM, resPWM);
+  ledcAttachPin(ledA, PWM_A);
+  ledcWrite(PWM_A, 0);
 }
