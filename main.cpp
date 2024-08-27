@@ -141,15 +141,14 @@ void enviar(void){
 //lo transforma para poder usarlo en la función temperatura (abajo está definida). 
 void obtener_temp(void){
   val_sensor = analogRead(sensor);
-  mapeo = ((float)val_sensor*500)/4095;
+  mapeo = ((float)val_sensor*3300)/4095 + 20;
   envio = 0;
   temperatura(mapeo);
 }
 //esta función toma el valor de la variable mapeo y obtiene separado los dígitos para mostrarlos en el display. 
 //Los dígitos obtenidos los mete en un array. 
 void temperatura(float mapeo){
-  temp = mapeo;
-  mapeo = mapeo*10;
+  temp = mapeo/10;
   dig[0] = mapeo/100;
   dig[1] = ((int)mapeo%100)/10;
   dig[2] = ((int)mapeo%10);
