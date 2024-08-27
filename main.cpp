@@ -141,7 +141,7 @@ void enviar(void){
 //lo transforma para poder usarlo en la función temperatura (abajo está definida). 
 void obtener_temp(void){
   val_sensor = analogRead(sensor);
-  mapeo = ((float)val_sensor*330)/4095;
+  mapeo = ((float)val_sensor*500)/4095;
   envio = 0;
   temperatura(mapeo);
 }
