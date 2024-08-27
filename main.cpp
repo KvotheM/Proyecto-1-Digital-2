@@ -58,6 +58,10 @@ float temp = 0.0;
 //Mandamos a llamar la interrupción del botón
 void IRAM_ATTR ada_ISR(void);
 
+//Definimos el mux para la interrupción y el tiempo de debounce
+portMUX_TYPE mux = portMUX_INITIALIZER_UNLOCKED;
+volatile unsigned long debounce1 = 0;
+
 //Mandamos a llamar las funciones de obtención, conversión, envío y display de temperatura. 
 void temperatura(float mapeo);
 void display(int valorSensor);
@@ -71,10 +75,6 @@ void initPWM_led_N(void);
 void initPWM_led_R(void);
 void initPWM_led_A(void);
 void PWM(float temp);
-
-//Definimos el mux para la interrupción y el tiempo de debounce
-portMUX_TYPE mux = portMUX_INITIALIZER_UNLOCKED;
-volatile unsigned long debounce1 = 0;
 
 //Asignamos el feed de Ada al que mandaremos los datos
 AdafruitIO_Feed *Temperatura = io.feed("Temperatura");
