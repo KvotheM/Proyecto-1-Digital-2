@@ -118,11 +118,11 @@ void setup() {
 }
 
 void loop() {
-  //iniciamos la conexión del io
-  io.run();
   //este loop espera a que la interrupción cambie el valor de la variable envío para obtener el valor de temperatura
   //y enviarlo a Adafruit haciendo uso de dos funciones definidas posteriormente en el código
   if(envio == 1){
+    io.run();
+    delay(10);
     obtener_temp();
     enviar();
   }
@@ -141,7 +141,7 @@ void enviar(void){
 //lo transforma para poder usarlo en la función temperatura (abajo está definida). 
 void obtener_temp(void){
   val_sensor = analogRead(sensor);
-  mapeo = ((float)val_sensor*3300)/4095 + 20;
+  mapeo = ((float)val_sensor*3300)/4095 + 200;
   envio = 0;
   temperatura(mapeo);
 }
